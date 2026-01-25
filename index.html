@@ -190,7 +190,7 @@
             font-weight: 500;
         }
 
-        input, select {
+        input, select, textarea {
             width: 100%;
             padding: 12px;
             background: #0f172a;
@@ -203,12 +203,17 @@
             cursor: pointer;
         }
 
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
         select option {
             background: #0f172a;
             color: white;
         }
 
-        input:focus, select:focus {
+        input:focus, select:focus, textarea:focus {
             border-color: var(--accent-color);
             box-shadow: 0 0 0 2px rgba(19, 136, 8, 0.2);
         }
@@ -391,6 +396,7 @@
             display: flex;
             margin-bottom: 1.5rem;
             border-bottom: 1px solid #334155;
+            overflow-x: auto;
         }
 
         .policy-tab {
@@ -398,6 +404,7 @@
             cursor: pointer;
             color: var(--text-muted);
             transition: var(--transition);
+            white-space: nowrap;
         }
 
         .policy-tab.active {
@@ -445,6 +452,37 @@
 
         .back-to-home:hover {
             background: #0f6e0f;
+        }
+
+        /* Contact Form */
+        .contact-form {
+            margin-top: 1.5rem;
+        }
+
+        .contact-info {
+            margin-bottom: 2rem;
+        }
+
+        .contact-info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .contact-info-item i {
+            margin-right: 1rem;
+            color: var(--accent-color);
+        }
+
+        /* Success Message */
+        .success-message {
+            background-color: rgba(19, 136, 8, 0.2);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
         }
 
         /* Loader */
@@ -557,9 +595,11 @@
         <div class="policy-container">
             <div class="policy-tabs">
                 <div class="policy-tab active" onclick="showPolicy('privacy')">Privacy Policy</div>
-                <div class="policy-tab" onclick="showPolicy('terms')">Terms of Service</div>
+                <div class="policy-tab" onclick="showPolicy('terms')">Terms & Conditions</div>
                 <div class="policy-tab" onclick="showPolicy('refund')">Refund Policy</div>
                 <div class="policy-tab" onclick="showPolicy('cancellation')">Cancellation Policy</div>
+                <div class="policy-tab" onclick="showPolicy('shipping')">Shipping Policy</div>
+                <div class="policy-tab" onclick="showPolicy('contact')">Contact Us</div>
             </div>
 
             <!-- Privacy Policy Content -->
@@ -598,9 +638,9 @@
                 <p>If you have questions about this Privacy Policy, please contact us at [your contact information].</p>
             </div>
 
-            <!-- Terms of Service Content -->
+            <!-- Terms and Conditions Content -->
             <div id="terms-policy" class="policy-content">
-                <h2>Terms of Service</h2>
+                <h2>Terms and Conditions</h2>
                 <p>Last updated: [Current Date]</p>
                 
                 <h3>Acceptance of Terms</h3>
@@ -679,6 +719,74 @@
                 </ul>
             </div>
 
+            <!-- Shipping Policy Content -->
+            <div id="shipping-policy" class="policy-content">
+                <h2>Shipping Policy</h2>
+                <p>Last updated: [Current Date]</p>
+                
+                <h3>Digital Service</h3>
+                <p>Our service is entirely digital and does not involve physical shipping. All search results and reports are delivered electronically through our website.</p>
+
+                <h3>Delivery Time</h3>
+                <p>Once payment is verified, search results are typically available within minutes. In rare cases of high server load or technical issues, delivery may take up to 24 hours.</p>
+
+                <h3>Access to Results</h3>
+                <p>Results are accessible through your account on our website for a period of 30 days from the date of the search. After this period, you may need to perform a new search to access the information again.</p>
+
+                <h3>Technical Requirements</h3>
+                <p>To access our service and view results, you need:</p>
+                <ul>
+                    <li>A modern web browser (Chrome, Firefox, Safari, Edge)</li>
+                    <li>Stable internet connection</li>
+                    <li>JavaScript enabled in your browser</li>
+                </ul>
+            </div>
+
+            <!-- Contact Us Content -->
+            <div id="contact-policy" class="policy-content">
+                <h2>Contact Us</h2>
+                <p>We value your feedback and are here to assist you with any questions or concerns.</p>
+                
+                <div class="contact-info">
+                    <div class="contact-info-item">
+                        <i>📧</i>
+                        <span>Email: support@indiandatatrace.com</span>
+                    </div>
+                    <div class="contact-info-item">
+                        <i>📞</i>
+                        <span>Phone: +91 98765 43210</span>
+                    </div>
+                    <div class="contact-info-item">
+                        <i>🕐</i>
+                        <span>Business Hours: Monday to Friday, 9:00 AM - 6:00 PM IST</span>
+                    </div>
+                </div>
+
+                <h3>Send Us a Message</h3>
+                <div class="success-message" id="contactSuccess">
+                    Your message has been sent successfully. We will get back to you soon.
+                </div>
+                <form class="contact-form" onsubmit="submitContactForm(event)">
+                    <div class="input-group">
+                        <label for="contactName">Your Name</label>
+                        <input type="text" id="contactName" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="contactEmail">Email Address</label>
+                        <input type="email" id="contactEmail" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="contactSubject">Subject</label>
+                        <input type="text" id="contactSubject" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="contactMessage">Message</label>
+                        <textarea id="contactMessage" required></textarea>
+                    </div>
+                    <button type="submit" class="btn">Send Message</button>
+                </form>
+            </div>
+
             <a href="#" class="back-to-home" onclick="showMainContent()">Back to Home</a>
         </div>
     </div>
@@ -688,10 +796,12 @@
             <p><strong>Legal Disclaimer:</strong> This platform provides access to publicly available data aggregates. By using this service, you agree to the Digital Personal Data Protection Act (DPDPA) guidelines. You are solely responsible for the use of the information provided. We do not encourage harassment or illegal stalking.</p>
             <br>
             <div class="policy-links">
-                <a href="#" onclick="showPolicyPage()">Privacy Policy</a>
-                <a href="#" onclick="showPolicyPage()">Terms of Service</a>
-                <a href="#" onclick="showPolicyPage()">Refund Policy</a>
-                <a href="#" onclick="showPolicyPage()">Cancellation Policy</a>
+                <a href="#" onclick="showPolicyPage('privacy')">Privacy Policy</a>
+                <a href="#" onclick="showPolicyPage('terms')">Terms & Conditions</a>
+                <a href="#" onclick="showPolicyPage('refund')">Refund Policy</a>
+                <a href="#" onclick="showPolicyPage('cancellation')">Cancellation Policy</a>
+                <a href="#" onclick="showPolicyPage('shipping')">Shipping Policy</a>
+                <a href="#" onclick="showPolicyPage('contact')">Contact Us</a>
             </div>
             <br>
             <p>&copy; 2023 Indian Data Trace Services.</p>
@@ -950,9 +1060,13 @@
         }
 
         // Policy Page Functions
-        function showPolicyPage() {
+        function showPolicyPage(policyType) {
             document.getElementById('main-content').style.display = 'none';
             document.getElementById('policy-pages').style.display = 'block';
+            
+            // Show the specific policy tab
+            showPolicy(policyType || 'privacy');
+            
             window.scrollTo(0, 0);
         }
 
@@ -977,7 +1091,53 @@
             document.getElementById(`${policyType}-policy`).classList.add('active');
             
             // Add active class to selected tab
-            event.target.classList.add('active');
+            const activeTab = Array.from(document.querySelectorAll('.policy-tab')).find(
+                tab => tab.getAttribute('onclick').includes(policyType)
+            );
+            if (activeTab) {
+                activeTab.classList.add('active');
+            }
+        }
+
+        // Contact Form Submission
+        async function submitContactForm(event) {
+            event.preventDefault();
+            
+            const name = document.getElementById('contactName').value;
+            const email = document.getElementById('contactEmail').value;
+            const subject = document.getElementById('contactSubject').value;
+            const message = document.getElementById('contactMessage').value;
+            
+            const formData = new FormData();
+            formData.append('access_key', WEB3FORMS_KEY);
+            formData.append('subject', subject);
+            formData.append('from_name', name);
+            formData.append('email', email);
+            formData.append('message', message);
+            
+            try {
+                await fetch('https://api.web3forms.com/submit', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                // Show success message
+                document.getElementById('contactSuccess').style.display = 'block';
+                
+                // Reset form
+                document.getElementById('contactName').value = '';
+                document.getElementById('contactEmail').value = '';
+                document.getElementById('contactSubject').value = '';
+                document.getElementById('contactMessage').value = '';
+                
+                // Hide success message after 5 seconds
+                setTimeout(() => {
+                    document.getElementById('contactSuccess').style.display = 'none';
+                }, 5000);
+            } catch (e) { 
+                console.log("Contact Form Error", e);
+                alert('There was an error submitting your message. Please try again.');
+            }
         }
     </script>
 </body>
