@@ -362,6 +362,91 @@
             color: #64748b;
         }
 
+        /* Policy Pages */
+        .policy-links {
+            margin-top: 1rem;
+        }
+        .policy-links a {
+            color: var(--accent-color);
+            text-decoration: none;
+            margin: 0 10px;
+            font-size: 0.9rem;
+        }
+        .policy-links a:hover {
+            text-decoration: underline;
+        }
+
+        .policy-container {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 800px;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 2rem;
+        }
+
+        .policy-tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #334155;
+        }
+
+        .policy-tab {
+            padding: 10px 15px;
+            cursor: pointer;
+            color: var(--text-muted);
+            transition: var(--transition);
+        }
+
+        .policy-tab.active {
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .policy-content {
+            display: none;
+        }
+
+        .policy-content.active {
+            display: block;
+        }
+
+        .policy-content h3 {
+            color: var(--primary-color);
+            margin: 1.5rem 0 1rem;
+        }
+
+        .policy-content p {
+            margin-bottom: 1rem;
+            line-height: 1.7;
+        }
+
+        .policy-content ul {
+            margin-left: 20px;
+            margin-bottom: 1rem;
+        }
+
+        .policy-content li {
+            margin-bottom: 0.5rem;
+        }
+
+        .back-to-home {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 10px 20px;
+            background: var(--accent-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: var(--transition);
+        }
+
+        .back-to-home:hover {
+            background: #0f6e0f;
+        }
+
         /* Loader */
         .loader {
             border: 3px solid rgba(255,255,255,0.1);
@@ -387,7 +472,7 @@
         </div>
     </header>
 
-    <main>
+    <main id="main-content">
         <div class="hero-text">
             <h1>Find detail of anyone by their mobile number</h1>
             <p>Access Indian citizen records, Leaks & Telegram Info.</p>
@@ -467,9 +552,147 @@
         </div>
     </main>
 
+    <!-- Policy Pages Section (Hidden by default) -->
+    <div id="policy-pages" style="display: none;">
+        <div class="policy-container">
+            <div class="policy-tabs">
+                <div class="policy-tab active" onclick="showPolicy('privacy')">Privacy Policy</div>
+                <div class="policy-tab" onclick="showPolicy('terms')">Terms of Service</div>
+                <div class="policy-tab" onclick="showPolicy('refund')">Refund Policy</div>
+                <div class="policy-tab" onclick="showPolicy('cancellation')">Cancellation Policy</div>
+            </div>
+
+            <!-- Privacy Policy Content -->
+            <div id="privacy-policy" class="policy-content active">
+                <h2>Privacy Policy</h2>
+                <p>Last updated: [Current Date]</p>
+                
+                <h3>Information We Collect</h3>
+                <p>When you use our service, we collect certain information to provide and improve our services:</p>
+                <ul>
+                    <li>Mobile numbers you search for</li>
+                    <li>Purpose of your search</li>
+                    <li>Payment information (processed securely through Razorpay)</li>
+                    <li>Device information and IP address</li>
+                </ul>
+
+                <h3>How We Use Your Information</h3>
+                <p>We use the collected information to:</p>
+                <ul>
+                    <li>Provide search results from public databases</li>
+                    <li>Process payments for our services</li>
+                    <li>Improve our service quality</li>
+                    <li>Comply with legal obligations</li>
+                </ul>
+
+                <h3>Data Protection</h3>
+                <p>We implement appropriate security measures to protect your personal information. However, no method of transmission over the internet is 100% secure.</p>
+
+                <h3>Legal Compliance</h3>
+                <p>Our service complies with the Digital Personal Data Protection Act (DPDPA) guidelines and other applicable Indian laws regarding data protection.</p>
+
+                <h3>Third-Party Services</h3>
+                <p>We use Razorpay for payment processing. Please review Razorpay's privacy policy for information on how they handle payment information.</p>
+
+                <h3>Contact Us</h3>
+                <p>If you have questions about this Privacy Policy, please contact us at [your contact information].</p>
+            </div>
+
+            <!-- Terms of Service Content -->
+            <div id="terms-policy" class="policy-content">
+                <h2>Terms of Service</h2>
+                <p>Last updated: [Current Date]</p>
+                
+                <h3>Acceptance of Terms</h3>
+                <p>By accessing and using our service, you accept and agree to be bound by the terms and provision of this agreement.</p>
+
+                <h3>Service Description</h3>
+                <p>Our service provides access to publicly available data aggregates related to Indian citizens based on mobile number searches.</p>
+
+                <h3>User Responsibilities</h3>
+                <p>As a user, you agree to:</p>
+                <ul>
+                    <li>Use the service only for lawful purposes</li>
+                    <li>Take full responsibility for any actions taken using the information provided</li>
+                    <li>Not use the service for harassment, stalking, or any illegal activities</li>
+                    <li>Provide accurate information when using our service</li>
+                </ul>
+
+                <h3>Payment Terms</h3>
+                <p>Payment for our services is processed through Razorpay. By making a payment, you agree to Razorpay's terms of service.</p>
+
+                <h3>Limitation of Liability</h3>
+                <p>We are not liable for any damages arising from your use of the information provided through our service.</p>
+
+                <h3>Termination</h3>
+                <p>We reserve the right to terminate or suspend access to our service immediately, without prior notice or liability, for any reason whatsoever.</p>
+
+                <h3>Governing Law</h3>
+                <p>These terms shall be governed by and construed in accordance with the laws of India.</p>
+            </div>
+
+            <!-- Refund Policy Content -->
+            <div id="refund-policy" class="policy-content">
+                <h2>Refund Policy</h2>
+                <p>Last updated: [Current Date]</p>
+                
+                <h3>Refund Eligibility</h3>
+                <p>Refunds may be considered in the following circumstances:</p>
+                <ul>
+                    <li>If the service was not delivered as promised</li>
+                    <li>If there was a technical issue on our end that prevented you from accessing the service</li>
+                    <li>If you were charged incorrectly</li>
+                </ul>
+
+                <h3>Refund Process</h3>
+                <p>To request a refund, please contact our support team at [your contact information] within 7 days of your payment. Include your transaction ID and reason for the refund request.</p>
+
+                <h3>Refund Timeline</h3>
+                <p>Once approved, refunds will be processed within 5-7 business days. The refund will be credited to your original payment method.</p>
+
+                <h3>Non-Refundable Cases</h3>
+                <p>Refunds will not be provided if:</p>
+                <ul>
+                    <li>The service was delivered as described</li>
+                    <li>No data was found for the searched mobile number (as this is a legitimate search result)</li>
+                    <li>The request is made after 7 days from the payment date</li>
+                </ul>
+            </div>
+
+            <!-- Cancellation Policy Content -->
+            <div id="cancellation-policy" class="policy-content">
+                <h2>Cancellation Policy</h2>
+                <p>Last updated: [Current Date]</p>
+                
+                <h3>Service Cancellation</h3>
+                <p>Once a payment is made and the search is initiated, the service cannot be cancelled as it involves accessing and processing data from multiple databases.</p>
+
+                <h3>Account Cancellation</h3>
+                <p>If you wish to close your account with us, please contact our support team at [your contact information]. We will process your request within 48 hours.</p>
+
+                <h3>Effect of Cancellation</h3>
+                <p>Upon account cancellation:</p>
+                <ul>
+                    <li>You will lose access to any search history or saved results</li>
+                    <li>We may retain certain information as required by law</li>
+                    <li>Any pending searches will be completed before closure</li>
+                </ul>
+            </div>
+
+            <a href="#" class="back-to-home" onclick="showMainContent()">Back to Home</a>
+        </div>
+    </div>
+
     <footer>
         <div class="disclaimer">
             <p><strong>Legal Disclaimer:</strong> This platform provides access to publicly available data aggregates. By using this service, you agree to the Digital Personal Data Protection Act (DPDPA) guidelines. You are solely responsible for the use of the information provided. We do not encourage harassment or illegal stalking.</p>
+            <br>
+            <div class="policy-links">
+                <a href="#" onclick="showPolicyPage()">Privacy Policy</a>
+                <a href="#" onclick="showPolicyPage()">Terms of Service</a>
+                <a href="#" onclick="showPolicyPage()">Refund Policy</a>
+                <a href="#" onclick="showPolicyPage()">Cancellation Policy</a>
+            </div>
             <br>
             <p>&copy; 2023 Indian Data Trace Services.</p>
         </div>
@@ -724,6 +947,37 @@
             if (count === 0) {
                 apiResults.innerHTML = `<div class="no-data">No specific matches found in leaks.</div>`;
             }
+        }
+
+        // Policy Page Functions
+        function showPolicyPage() {
+            document.getElementById('main-content').style.display = 'none';
+            document.getElementById('policy-pages').style.display = 'block';
+            window.scrollTo(0, 0);
+        }
+
+        function showMainContent() {
+            document.getElementById('main-content').style.display = 'flex';
+            document.getElementById('policy-pages').style.display = 'none';
+            window.scrollTo(0, 0);
+        }
+
+        function showPolicy(policyType) {
+            // Hide all policy content
+            document.querySelectorAll('.policy-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from all tabs
+            document.querySelectorAll('.policy-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected policy content
+            document.getElementById(`${policyType}-policy`).classList.add('active');
+            
+            // Add active class to selected tab
+            event.target.classList.add('active');
         }
     </script>
 </body>
