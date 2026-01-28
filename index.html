@@ -70,6 +70,49 @@
             color: var(--text-muted);
         }
 
+        /* Test Mode Toggle */
+        .test-mode-toggle {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(255, 153, 51, 0.2);
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .test-mode-toggle label {
+            color: var(--primary-color);
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .test-mode-toggle input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .test-mode-indicator {
+            position: fixed;
+            top: 130px;
+            right: 20px;
+            background: var(--error-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            z-index: 1000;
+            display: none;
+        }
+
+        .test-mode-indicator.active {
+            display: block;
+        }
+
         /* Main Container */
         main {
             flex: 1;
@@ -270,6 +313,16 @@
             transform: none;
         }
 
+        .btn-test {
+            background: var(--error-color);
+            color: white;
+            margin-top: 10px;
+        }
+
+        .btn-test:hover {
+            background: #ff3333;
+        }
+
         .error-msg {
             color: var(--error-color);
             font-size: 0.8rem;
@@ -301,6 +354,23 @@
         .razorpay-button-container {
             margin-bottom: 20px;
             text-align: center;
+        }
+
+        /* Test Payment Notice */
+        .test-payment-notice {
+            background: rgba(255, 77, 77, 0.2);
+            border: 1px solid var(--error-color);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--error-color);
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .test-payment-notice.active {
+            display: block;
         }
 
         /* Results Styling */
@@ -528,6 +598,15 @@
         </div>
     </header>
 
+    <!-- Test Mode Toggle -->
+    <div class="test-mode-toggle">
+        <input type="checkbox" id="testModeToggle">
+        <label for="testModeToggle">Test Mode (No Real Payment)</label>
+    </div>
+    <div class="test-mode-indicator" id="testModeIndicator">
+        TEST MODE ACTIVE
+    </div>
+
     <main id="main-content">
         <div class="hero-text">
             <h1>Find detail of anyone by their mobile number</h1>
@@ -583,8 +662,13 @@
                     <p class="payment-info">Click below to pay securely. After payment, you'll be automatically redirected to view the data.</p>
                 </div>
 
-                <!-- Razorpay Payment Button -->
-                <div class="razorpay-button-container">
+                <!-- Test Payment Notice -->
+                <div class="test-payment-notice" id="testPaymentNotice">
+                    You're in TEST MODE. Click the button below to simulate a successful payment without actually paying.
+                </div>
+
+                <!-- Razorpay Payment Button (Real) -->
+                <div class="razorpay-button-container" id="realPaymentContainer">
                     <form>
                         <script src="https://checkout.razorpay.com/v1/payment-button.js" 
                                 data-payment_button_id="pl_S9GhMxOGhyYyXn" 
@@ -592,6 +676,13 @@
                                 async> 
                         </script> 
                     </form>
+                </div>
+                
+                <!-- Test Payment Button (Simulated) -->
+                <div id="testPaymentContainer" style="display: none;">
+                    <button class="btn btn-test" onclick="simulatePaymentSuccess()">
+                        Simulate Payment Success (Test Mode)
+                    </button>
                 </div>
                 
                 <div class="payment-success" id="paymentSuccess">
@@ -845,6 +936,7 @@
             mobile: "",
             purpose: ""
         };
+        let testMode = false;
 
         // Elements
         const stepIndicators = [
@@ -868,6 +960,27 @@
         const loadingText = document.getElementById('loadingText');
         const apiLoader = document.getElementById('apiLoader');
         const paymentSuccess = document.getElementById('paymentSuccess');
+        const testModeToggle = document.getElementById('testModeToggle');
+        const testModeIndicator = document.getElementById('testModeIndicator');
+        const testPaymentNotice = document.getElementById('testPaymentNotice');
+        const realPaymentContainer = document.getElementById('realPaymentContainer');
+        const testPaymentContainer = document.getElementById('testPaymentContainer');
+
+        // Test Mode Toggle
+        testModeToggle.addEventListener('change', function() {
+            testMode = this.checked;
+            if (testMode) {
+                testModeIndicator.classList.add('active');
+                testPaymentNotice.classList.add('active');
+                realPaymentContainer.style.display = 'none';
+                testPaymentContainer.style.display = 'block';
+            } else {
+                testModeIndicator.classList.remove('active');
+                testPaymentNotice.classList.remove('active');
+                realPaymentContainer.style.display = 'block';
+                testPaymentContainer.style.display = 'none';
+            }
+        });
 
         // Update UI Step
         function updateStep(step) {
@@ -960,6 +1073,19 @@
                     updateStep(currentStep);
                 }, 1000);
             }
+        }
+
+        // Simulate Payment Success (Test Mode)
+        function simulatePaymentSuccess() {
+            // Show payment success message
+            paymentSuccess.style.display = 'block';
+            
+            // Move to step 3 after a short delay
+            setTimeout(() => {
+                currentStep = 3;
+                updateStep(currentStep);
+                fetchTelegramData(searchData.mobile);
+            }, 2000);
         }
 
         // Handle Razorpay payment success
