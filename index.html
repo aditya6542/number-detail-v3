@@ -297,6 +297,12 @@
             font-size: 0.9rem;
         }
 
+        /* Razorpay Button Container */
+        .razorpay-button-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
         /* Results Styling */
         .results-container {
             max-height: 500px;
@@ -500,6 +506,18 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Payment Success Notification */
+        .payment-success {
+            background-color: rgba(19, 136, 8, 0.2);
+            border: 1px solid var(--accent-color);
+            color: var(--accent-color);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            display: none;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -556,31 +574,35 @@
                 <button class="btn" onclick="processStep1()">Search Records</button>
             </div>
 
-            <!-- Step 2: Single Button Payment -->
+            <!-- Step 2: Razorpay Payment -->
             <div class="form-section" id="step-2">
                 <h2>Unlock Data</h2>
                 
                 <div class="payment-redirect-area">
                     <span class="price-tag">₹159</span>
-                    <p class="payment-info">Click below to pay securely. After payment, return to this tab to unlock data.</p>
+                    <p class="payment-info">Click below to pay securely. After payment, you'll be automatically redirected to view the data.</p>
                 </div>
 
-                <!-- Single Redirect Button -->
-                <a href="https://rzp.io/rzp/17VGuWRh" target="_blank" class="btn" style="display:block; text-align:center; text-decoration:none;" onclick="handlePaymentClick()">
-                    Pay ₹159 Now
-                </a>
+                <!-- Razorpay Payment Button -->
+                <div class="razorpay-button-container">
+                    <form>
+                        <script src="https://checkout.razorpay.com/v1/payment-button.js" 
+                                data-payment_button_id="pl_S9GhMxOGhyYyXn" 
+                                data-buttontext="Pay ₹159 Now"
+                                async> 
+                        </script> 
+                    </form>
+                </div>
                 
-                <div style="margin-top: 20px; text-align: center;">
-                    <button onclick="goToVerify()" style="background:transparent; border:1px solid var(--text-muted); color:var(--text-muted); padding:10px; border-radius:8px; width:100%; cursor:pointer;">
-                        I have Paid. Verify & Unlock
-                    </button>
+                <div class="payment-success" id="paymentSuccess">
+                    Payment successful! Redirecting to your results...
                 </div>
             </div>
 
             <!-- Step 3: API Results -->
             <div class="form-section" id="step-3">
                 <h2>Search Results</h2>
-                <p class="payment-info" id="loadingText">Verifying payment & Fetching data...</p>
+                <p class="payment-info" id="loadingText">Fetching data from Telegram...</p>
                 <div class="loader" id="apiLoader" style="display: block; margin-bottom: 20px;"></div>
                 
                 <div class="results-container" id="apiResults" style="display: none;">
@@ -845,6 +867,7 @@
         const apiResults = document.getElementById('apiResults');
         const loadingText = document.getElementById('loadingText');
         const apiLoader = document.getElementById('apiLoader');
+        const paymentSuccess = document.getElementById('paymentSuccess');
 
         // Update UI Step
         function updateStep(step) {
@@ -939,26 +962,41 @@
             }
         }
 
-        // Payment Interaction
-        function handlePaymentClick() {
-            // Nothing special needed, the href handles the redirect
-            console.log("User redirected to payment");
+        // Handle Razorpay payment success
+        window.addEventListener('load', function() {
+            // Override the Razorpay payment button handler
+            const originalRazorpayHandler = window.Razorpay && window.Razorpay.onPaymentSuccess;
+            
+            // Listen for payment success events
+            document.addEventListener('payment.success', function(event) {
+                handlePaymentSuccess();
+            });
+            
+            // Check URL parameters for payment success
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('payment') === 'success') {
+                handlePaymentSuccess();
+            }
+        });
+
+        // Handle payment success
+        function handlePaymentSuccess() {
+            // Show payment success message
+            paymentSuccess.style.display = 'block';
+            
+            // Move to step 3 after a short delay
+            setTimeout(() => {
+                currentStep = 3;
+                updateStep(currentStep);
+                fetchTelegramData(searchData.mobile);
+            }, 2000);
         }
 
-        // Verification Flow (Simulated Auto-Check)
-        function goToVerify() {
-            // In a real static site without backend, we assume user is honest or we use a complex polling.
-            // Here we proceed to unlock data.
-            currentStep = 3;
-            updateStep(currentStep);
-            fetchLeakData(searchData.mobile);
-        }
-
-        // Step 3: API Integration Logic (With CORS Proxy)
-        async function fetchLeakData(number) {
+        // Step 3: Fetch Telegram Data
+        async function fetchTelegramData(number) {
             apiResults.style.display = 'none';
             loadingText.style.display = 'block';
-            loadingText.innerText = "Connecting to Leaks & Telegram DB (via Proxy)...";
+            loadingText.innerText = "Fetching data from Telegram...";
             apiLoader.style.display = 'block';
 
             const payload = {
@@ -968,19 +1006,8 @@
             };
 
             try {
-                // We use Promise.all to fetch both APIs
-                // We construct the proxy URL: PROXY + TargetURL
-                
-                const req1 = fetch(CORS_PROXY + encodeURIComponent(API_URL), {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'x-requested-with': 'XMLHttpRequest' // Helps with some proxies
-                    },
-                    body: JSON.stringify({ ...payload, token: LEAKOSINT_TOKEN })
-                });
-
-                const req2 = fetch(CORS_PROXY + encodeURIComponent(API_URL), {
+                // Fetch data from Telegram API
+                const req = fetch(CORS_PROXY + encodeURIComponent(API_URL), {
                     method: 'POST',
                     headers: { 
                         'Content-Type': 'application/json',
@@ -989,21 +1016,13 @@
                     body: JSON.stringify({ ...payload, token: TELEGRAM_TOKEN })
                 });
 
-                const [res1, res2] = await Promise.all([req1, req2]);
-
-                const data1 = await res1.json();
-                const data2 = await res2.json();
-
-                // Handle Proxy wrappers if any (some proxies wrap the response)
-                // corsproxy.io usually returns the raw body directly if method is POST
-                // But let's be safe and check for a 'contents' property or similar
-                const json1 = data1.contents || data1;
-                const json2 = data2.contents || data2;
-
-                // Combine results
-                const combinedList = { ...json1.List, ...json2.List };
+                const res = await req;
+                const data = await res.json();
                 
-                displayResults({ List: combinedList });
+                // Handle Proxy wrappers if any
+                const json = data.contents || data;
+                
+                displayResults({ List: json.List });
 
             } catch (error) {
                 console.error("API Error:", error);
@@ -1025,7 +1044,7 @@
 
             const resultsList = data.List;
             if (!resultsList || Object.keys(resultsList).length === 0) {
-                apiResults.innerHTML = `<div class="no-data"><p>No data found in databases.</p></div>`;
+                apiResults.innerHTML = `<div class="no-data"><p>No data found in Telegram database.</p></div>`;
                 return;
             }
 
@@ -1055,7 +1074,7 @@
             }
 
             if (count === 0) {
-                apiResults.innerHTML = `<div class="no-data">No specific matches found in leaks.</div>`;
+                apiResults.innerHTML = `<div class="no-data">No specific matches found in Telegram database.</div>`;
             }
         }
 
