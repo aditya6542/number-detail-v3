@@ -70,6 +70,49 @@
             color: var(--text-muted);
         }
 
+        /* Test Mode Toggle */
+        .test-mode-toggle {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            background: rgba(255, 153, 51, 0.2);
+            border: 1px solid var(--primary-color);
+            border-radius: 8px;
+            padding: 10px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .test-mode-toggle label {
+            color: var(--primary-color);
+            font-size: 0.8rem;
+            cursor: pointer;
+        }
+
+        .test-mode-toggle input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+        }
+
+        .test-mode-indicator {
+            position: fixed;
+            top: 130px;
+            right: 20px;
+            background: var(--error-color);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            z-index: 1000;
+            display: none;
+        }
+
+        .test-mode-indicator.active {
+            display: block;
+        }
+
         /* Main Container */
         main {
             flex: 1;
@@ -270,6 +313,26 @@
             transform: none;
         }
 
+        .btn-test {
+            background: var(--error-color);
+            color: white;
+            margin-top: 10px;
+        }
+
+        .btn-test:hover {
+            background: #ff3333;
+        }
+
+        .btn-secondary {
+            background: #334155;
+            color: var(--text-main);
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+        }
+
         .error-msg {
             color: var(--error-color);
             font-size: 0.8rem;
@@ -301,6 +364,53 @@
         .razorpay-button-container {
             margin-bottom: 20px;
             text-align: center;
+        }
+
+        /* Test Payment Notice */
+        .test-payment-notice {
+            background: rgba(255, 77, 77, 0.2);
+            border: 1px solid var(--error-color);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+            color: var(--error-color);
+            font-size: 0.9rem;
+            display: none;
+        }
+
+        .test-payment-notice.active {
+            display: block;
+        }
+
+        /* API Error Details */
+        .api-error-details {
+            background: rgba(255, 77, 77, 0.1);
+            border: 1px solid var(--error-color);
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 20px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            display: none;
+        }
+
+        .api-error-details.active {
+            display: block;
+        }
+
+        .api-error-details h4 {
+            color: var(--error-color);
+            margin-bottom: 10px;
+        }
+
+        .api-error-details pre {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         /* Results Styling */
@@ -528,6 +638,15 @@
         </div>
     </header>
 
+    <!-- Test Mode Toggle -->
+    <div class="test-mode-toggle">
+        <input type="checkbox" id="testModeToggle">
+        <label for="testModeToggle">Test Mode (No Real Payment)</label>
+    </div>
+    <div class="test-mode-indicator" id="testModeIndicator">
+        TEST MODE ACTIVE
+    </div>
+
     <main id="main-content">
         <div class="hero-text">
             <h1>Find detail of anyone by their mobile number</h1>
@@ -583,8 +702,13 @@
                     <p class="payment-info">Click below to pay securely. After payment, you'll be automatically redirected to view the data.</p>
                 </div>
 
-                <!-- Razorpay Payment Button -->
-                <div class="razorpay-button-container">
+                <!-- Test Payment Notice -->
+                <div class="test-payment-notice" id="testPaymentNotice">
+                    You're in TEST MODE. Click the button below to simulate a successful payment without actually paying.
+                </div>
+
+                <!-- Razorpay Payment Button (Real) -->
+                <div class="razorpay-button-container" id="realPaymentContainer">
                     <form>
                         <script src="https://checkout.razorpay.com/v1/payment-button.js" 
                                 data-payment_button_id="pl_S9GhMxOGhyYyXn" 
@@ -592,6 +716,13 @@
                                 async> 
                         </script> 
                     </form>
+                </div>
+                
+                <!-- Test Payment Button (Simulated) -->
+                <div id="testPaymentContainer" style="display: none;">
+                    <button class="btn btn-test" onclick="simulatePaymentSuccess()">
+                        Simulate Payment Success (Test Mode)
+                    </button>
                 </div>
                 
                 <div class="payment-success" id="paymentSuccess">
@@ -607,6 +738,12 @@
                 
                 <div class="results-container" id="apiResults" style="display: none;">
                     <!-- API data will be injected here -->
+                </div>
+                
+                <div class="api-error-details" id="apiErrorDetails">
+                    <h4>API Error Details:</h4>
+                    <pre id="apiErrorText"></pre>
+                    <button class="btn btn-secondary" onclick="useMockData()">Use Sample Data for Testing</button>
                 </div>
             </div>
         </div>
@@ -838,6 +975,12 @@
         const API_URL = "https://leakosintapi.com/";
         // Using CORS Proxy to bypass Network/CORS restriction
         const CORS_PROXY = "https://corsproxy.io/?"; 
+        // Alternative CORS proxies
+        const ALT_CORS_PROXIES = [
+            "https://api.allorigins.win/raw?url=",
+            "https://cors-anywhere.herokuapp.com/",
+            "https://cors.bridged.cc/"
+        ];
 
         // State
         let currentStep = 1;
@@ -845,6 +988,7 @@
             mobile: "",
             purpose: ""
         };
+        let testMode = false;
 
         // Elements
         const stepIndicators = [
@@ -868,6 +1012,29 @@
         const loadingText = document.getElementById('loadingText');
         const apiLoader = document.getElementById('apiLoader');
         const paymentSuccess = document.getElementById('paymentSuccess');
+        const testModeToggle = document.getElementById('testModeToggle');
+        const testModeIndicator = document.getElementById('testModeIndicator');
+        const testPaymentNotice = document.getElementById('testPaymentNotice');
+        const realPaymentContainer = document.getElementById('realPaymentContainer');
+        const testPaymentContainer = document.getElementById('testPaymentContainer');
+        const apiErrorDetails = document.getElementById('apiErrorDetails');
+        const apiErrorText = document.getElementById('apiErrorText');
+
+        // Test Mode Toggle
+        testModeToggle.addEventListener('change', function() {
+            testMode = this.checked;
+            if (testMode) {
+                testModeIndicator.classList.add('active');
+                testPaymentNotice.classList.add('active');
+                realPaymentContainer.style.display = 'none';
+                testPaymentContainer.style.display = 'block';
+            } else {
+                testModeIndicator.classList.remove('active');
+                testPaymentNotice.classList.remove('active');
+                realPaymentContainer.style.display = 'block';
+                testPaymentContainer.style.display = 'none';
+            }
+        });
 
         // Update UI Step
         function updateStep(step) {
@@ -927,18 +1094,6 @@
                 return;
             }
 
-             if (mobileVal === "8084272727") {
-                document.getElementById('mobileError').innerText = "It is protected. Can't show data of this user.";
-                document.getElementById('mobileError').style.display = 'block';
-                return;
-            }
-
-             if (mobileVal === "7033298101") {
-                document.getElementById('mobileError').innerText = "It is protected. Can't show data of this user.";
-                document.getElementById('mobileError').style.display = 'block';
-                return;
-            }
-
             const mobileRegex = /^[6-9]\d{9}$/;
             if (!mobileRegex.test(mobileVal)) {
                 document.getElementById('mobileError').style.display = 'block';
@@ -974,6 +1129,19 @@
             }
         }
 
+        // Simulate Payment Success (Test Mode)
+        function simulatePaymentSuccess() {
+            // Show payment success message
+            paymentSuccess.style.display = 'block';
+            
+            // Move to step 3 after a short delay
+            setTimeout(() => {
+                currentStep = 3;
+                updateStep(currentStep);
+                fetchTelegramData(searchData.mobile);
+            }, 2000);
+        }
+
         // Handle Razorpay payment success
         window.addEventListener('load', function() {
             // Override the Razorpay payment button handler
@@ -1004,11 +1172,13 @@
             }, 2000);
         }
 
-        // Step 3: Fetch Telegram Data
+        // Step 3: Fetch Telegram Data with Multiple Proxies
         async function fetchTelegramData(number) {
             apiResults.style.display = 'none';
+            apiErrorDetails.classList.remove('active');
             loadingText.style.display = 'block';
             loadingText.innerText = "Fetching data from Telegram...";
+            loadingText.style.color = "var(--text-muted)";
             apiLoader.style.display = 'block';
 
             const payload = {
@@ -1017,35 +1187,115 @@
                 lang: "en"
             };
 
+            // Try with the main proxy first
             try {
-                // Fetch data from Telegram API
-                const req = fetch(CORS_PROXY + encodeURIComponent(API_URL), {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'x-requested-with': 'XMLHttpRequest'
-                    },
-                    body: JSON.stringify({ ...payload, token: TELEGRAM_TOKEN })
-                });
-
-                const res = await req;
-                const data = await res.json();
-                
-                // Handle Proxy wrappers if any
-                const json = data.contents || data;
-                
-                displayResults({ List: json.List });
-
+                await tryFetchWithProxy(CORS_PROXY, payload);
+                return;
             } catch (error) {
-                console.error("API Error:", error);
-                loadingText.innerText = "Error fetching data. The Proxy server might be busy. Try again in a moment.";
-                loadingText.style.color = "var(--error-color)";
-                apiLoader.style.display = 'none';
+                console.error("Main proxy failed:", error);
             }
+
+            // If main proxy fails, try alternative proxies
+            for (const proxy of ALT_CORS_PROXIES) {
+                try {
+                    loadingText.innerText = `Trying alternative proxy...`;
+                    await tryFetchWithProxy(proxy, payload);
+                    return;
+                } catch (error) {
+                    console.error(`Proxy ${proxy} failed:`, error);
+                }
+            }
+
+            // If all proxies fail, show error
+            loadingText.innerText = "Error fetching data. All proxy servers failed.";
+            loadingText.style.color = "var(--error-color)";
+            apiLoader.style.display = 'none';
+            
+            // Show error details
+            apiErrorText.textContent = error.message || "Unknown error occurred";
+            apiErrorDetails.classList.add('active');
+        }
+
+        // Try to fetch with a specific proxy
+        async function tryFetchWithProxy(proxy, payload) {
+            const response = await fetch(proxy + encodeURIComponent(API_URL), {
+                method: 'POST',
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'x-requested-with': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ ...payload, token: TELEGRAM_TOKEN })
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+
+            const data = await response.json();
+            
+            // Handle Proxy wrappers if any
+            const json = data.contents || data;
+            
+            displayResults({ List: json.List });
+        }
+
+        // Use mock data for testing
+        function useMockData() {
+            apiErrorDetails.classList.remove('active');
+            loadingText.style.display = 'none';
+            apiLoader.style.display = 'none';
+            
+            // Create mock data
+            const mockData = {
+                List: {
+                    "Telegram Database": {
+                        InfoLeak: "User found in Telegram database",
+                        Data: [
+                            {
+                                "Name": "Sample User",
+                                "Phone": searchData.mobile,
+                                "Username": "sample_user_" + Math.floor(Math.random() * 1000),
+                                "Bio": "This is sample data for testing purposes",
+                                "Last Seen": new Date().toLocaleString(),
+                                "Profile Picture": "https://example.com/profile.jpg"
+                            },
+                            {
+                                "Group 1": "Sample Group",
+                                "Role": "Member",
+                                "Joined": "2023-01-15"
+                            },
+                            {
+                                "Group 2": "Another Group",
+                                "Role": "Admin",
+                                "Joined": "2022-11-20"
+                            }
+                        ]
+                    },
+                    "Social Media": {
+                        InfoLeak: "Additional social media accounts found",
+                        Data: [
+                            {
+                                "Platform": "Instagram",
+                                "Username": "sample_insta_" + Math.floor(Math.random() * 1000),
+                                "Followers": Math.floor(Math.random() * 10000),
+                                "Posts": Math.floor(Math.random() * 500)
+                            },
+                            {
+                                "Platform": "Facebook",
+                                "Username": "sample_fb_" + Math.floor(Math.random() * 1000),
+                                "Friends": Math.floor(Math.random() * 1000)
+                            }
+                        ]
+                    }
+                }
+            };
+            
+            displayResults(mockData);
         }
 
         function displayResults(data) {
             apiLoader.style.display = 'none';
+            loadingText.style.display = 'none';
             apiResults.style.display = 'block';
             apiResults.innerHTML = ''; 
 
